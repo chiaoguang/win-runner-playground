@@ -1,0 +1,55 @@
+name: Free Windows Runner
+
+on:
+  workflow_dispatch:      # 手动触发（GitHub 页面点击 Run workflow）
+  push:
+    branches: [ main ]
+
+jobs:
+  windows-box:
+    name: 免费 Windows 主机试玩 (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 查看这台 Windows 的配置
+        shell: pwsh
+        run: |
+          Write-Output "===== OS ====="
+          (Get-ComputerInfo -Property WindowsVersion, WindowsProductName, CsName) | Format-List
+          Write-Output "===== CPU / 内存 ====="
+          Write-Output ("CPU 物理核心: " + (Get-PhysicalCoreCount))
+          Write-Output ("CPU 线程: " + (Get-Process -Id $PID).NumThreads)
+          $mem = (Get-ComputerInfo -Property TotalPhysicalMemory).TotalPhysicalMemory
+          Write-Output ("内存: " + [math]::Round($mem/1GB, 2) + " GB")
+          Write-Output "===== C 盘 ====="
+          Get-PSDrive C | Select-Object Name, @{n='Used(GB)';e={[math]::Round($_.Used/1GB,1)}}, @{n='Free(GB)';e={[math]::Round($_.Free/1GB,1)}}
+
+      - name: 预装工具一览
+        shell: pwsh
+        run: |
+          Write-Output "---- 版本 ----"
+          foreach ($t in @(["node","python","git","cmake","java"])) {
+            try { Write-Output ("$t => " + (& $t --version 2>&1 | Select-Object -First 1)) } catch { Write-Output "$t => 无" }
+          }
+          Write-Output "---- 包管理器 ----"
+          Write-Output ("winget => " + (winget --version))
+
+      - name: 随便做点事（示例：生成一个文件并上传给你）
+        shell: pwsh
+        run: |
+          $msg = @"
+          这是 GitHub Actions 免费 Windows Runner 上生成的文件。
+          时间(UTC): $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+          机器: $env:RUNNER_NAME | $env:RUNNER_MACHINE
+          系统: Windows Server 2022+ (windows-latest)
+          "@
+          $msg | Set-Content -Encoding utf8 "hello-from-windows-runner.txt"
+          Get-Content "hello-from-windows-runner.txt"
+
+      - name: 上传产物（下载查看）
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-runner-demo
+          path: hello-from-windows-runner.txt
