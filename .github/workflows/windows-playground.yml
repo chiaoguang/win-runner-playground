@@ -30,7 +30,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "---- 版本 ----"
-          foreach ($t in @(["node","python","git","cmake","java"])) {
+          foreach ($t in @("node","python","git","cmake","java")) {
             try { Write-Output ("$t => " + (& $t --version 2>&1 | Select-Object -First 1)) } catch { Write-Output "$t => 无" }
           }
           Write-Output "---- 包管理器 ----"
@@ -53,3 +53,4 @@ jobs:
         with:
           name: windows-runner-demo
           path: hello-from-windows-runner.txt
+
