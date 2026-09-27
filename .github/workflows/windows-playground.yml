@@ -19,8 +19,8 @@ jobs:
           Write-Output "===== OS ====="
           (Get-ComputerInfo -Property WindowsVersion, WindowsProductName, CsName) | Format-List
           Write-Output "===== CPU / 内存 ====="
-          Write-Output ("CPU 物理核心: " + (Get-PhysicalCoreCount))
-          Write-Output ("CPU 线程: " + (Get-Process -Id $PID).NumThreads)
+          $cpu = (cmd /c "echo %NUMBER_OF_PROCESSORS%" | Out-String).Trim()
+          Write-Output ("CPU 逻辑线程: " + $cpu)
           $mem = (Get-ComputerInfo -Property TotalPhysicalMemory).TotalPhysicalMemory
           Write-Output ("内存: " + [math]::Round($mem/1GB, 2) + " GB")
           Write-Output "===== C 盘 ====="
@@ -43,7 +43,7 @@ jobs:
           这是 GitHub Actions 免费 Windows Runner 上生成的文件。
           时间(UTC): $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
           机器: $env:RUNNER_NAME | $env:RUNNER_MACHINE
-          系统: Windows Server 2022+ (windows-latest)
+          系统: Windows Server 2025+ (windows-latest)
           "@
           $msg | Set-Content -Encoding utf8 "hello-from-windows-runner.txt"
           Get-Content "hello-from-windows-runner.txt"
